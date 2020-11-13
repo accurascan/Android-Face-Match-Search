@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/lout_user_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/im_left"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_margin="@dimen/_10dp"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/im_right"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_margin="@dimen/_10dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_match_score"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_margin="10dp"
+                android:background="@drawable/btn_bg_grey"
+                android:onClick="AccuraLeftFace"
+                android:padding="20dp"
+                android:layout_below="@id/lout_user_image"
+                android:text="Match Score : "
+                android:textColor="@color/white"
+                android:textSize="17dp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@id/tv_match_score">
+
+                <TextView
+                    android:id="@+id/left_face"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:layout_marginStart="40dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_marginTop="@dimen/_20dp"
+                    android:background="@drawable/btn_bg_red"
+                    android:onClick="AccuraLeftFace"
+                    android:padding="20dp"
+                    android:gravity="center"
+                    android:text="Match Image"
+                    android:textColor="@color/white"
+                    android:textSize="17dp"
+                    android:textStyle="bold"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/right_face"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:layout_margin="10dp"
+                    android:background="@drawable/btn_bg_red"
+                    android:onClick="AccuraRightFace"
+                    android:padding="20dp"
+                    android:text="Right Face"
+                    android:textColor="@color/white"
+                    android:textSize="17dp"
+                    android:textStyle="bold"
+                    android:layout_weight="1"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+
+            <TextView
+                android:id="@+id/tv_add_user"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_margin="10dp"
+                android:background="@drawable/btn_bg_red"
+                android:onClick="AccuraFaceMatch"
+                android:padding="20dp"
+                android:text="@string/app_name"
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:textSize="17dp"
+                android:visibility="gone"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+    </ScrollView>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_floatingBTN"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/ic_list"
+        android:onClick="AddUser"
+        app:elevation="6dp"
+        app:pressedTranslationZ="12dp" />
+
+</RelativeLayout>
