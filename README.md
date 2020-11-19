@@ -10,7 +10,19 @@ Below steps to setup Accura Face Match SDK's to your project.
     Generate your Accura license from https://accurascan.com/developer/dashboard
 ```
 
-#### Step 2 : Implement face match code manually to your activity.
+#### Step 2 : Implement SDK.
+Set Accura Face Match as a dependency to our app level `build.gradle` file.
+```
+dependencies {
+        ...
+   // for Accura auto face capture
+   implementation project(":autofacedetect")
+   // for Accura Face Match
+   implementation project(":accura_facem")
+}
+```
+
+#### Step 3 : Implement face match code manually to your activity.
 
     Important Grant Camera and storage Permission.
 
@@ -23,7 +35,7 @@ Below steps to setup Accura Face Match SDK's to your project.
         setContentView(R.layout.your_layout);
         // Initialized facehelper in onCreate.
         faceHelper = new FaceHelper(this);
-        
+
         // Detect face content from database base64 image
         // Store faceContent.getFeature() to your database
         FaceDetectionResult faceContent = faceHelper.getFaceContent(base64Image);
@@ -61,12 +73,12 @@ Below steps to setup Accura Face Match SDK's to your project.
      */
     @Override
     public void onSetInputImage(Bitmap src1) {
-       
+
     }
 
     @Override
     public void onSetMatchImage(Bitmap src2) {
-        
+
     }
 
     // Override methods for FaceCallback
@@ -82,7 +94,7 @@ Below steps to setup Accura Face Match SDK's to your project.
      */
     @Override
     public void onLeftDetect(FaceDetectionResult faceResult) {
-        faceHelper.recognizeFace(face.getFeature(), dbHelper.getFeatureList());
+        faceHelper.recognizeFace(faceResult.getFeature(), dbHelper.getFeatureList());
     }
 
     //call if face detect
@@ -93,6 +105,28 @@ Below steps to setup Accura Face Match SDK's to your project.
     @Override
     public void onExtractInit(int ret) {
     }
+
+#### Step 4 : Auto face capture SDK.
+Open selfie camera for auto capture.
+
+```
+Intent intent = SelfieCameraActivity.SelfieCameraIntent(MainActivity.this,null,Utils.createImageUri(MainActivity.this));
+startActivityForResult(intent, CAPTURE_IMAGE);
+
+@Override
+protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (resultCode == RESULT_OK) {
+        if (requestCode == CAPTURE_IMAGE && data != null) { // handle request code CAPTURE_IMAGE used for capture image in camera
+
+            Uri uri = data.getData();
+            if (uri != null && uri.getPath() != null) {
+                File file = new File(uri.getPath()); // retirve image from file path
+            }
+        }
+    }
+}
+```
 
 ## ProGuard
 Depending on your ProGuard (DexGuard) config and usage, you may need to include the following lines in your proguards.

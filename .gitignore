@@ -15,4 +15,5 @@
 /accura_facem/build
 .externalNativeBuild
 .cxx
+/autofacedetect/google-services.json
 

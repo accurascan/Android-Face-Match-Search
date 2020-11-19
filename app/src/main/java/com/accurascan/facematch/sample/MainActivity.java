@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.accurascan.facedetection.SelfieCameraActivity;
 import com.accurascan.facematch.sample.database.DatabaseHelper;
 import com.accurascan.facematch.sample.model.UserModel;
 import com.accurascan.facematch.ui.FaceMatchActivity;
@@ -29,7 +30,9 @@ import com.inet.facelock.callback.FaceDetectionResult;
 import com.inet.facelock.callback.FaceHelper;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -105,21 +108,23 @@ public class MainActivity extends AppCompatActivity implements FaceCallback, Fac
 
 
     public void AccuraLeftFace(View view) {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File f = new File(getCacheDir(), "temp.jpg");
-        Uri uriForFile = FileProvider.getUriForFile(
-                MainActivity.this,
-                getPackageName() + ".provider",
-                f
-        );
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, uriForFile);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            intent.putExtra("android.intent.extras.CAMERA_FACING", android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT);
-            intent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1);
-            intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true);
-        } else {
-            intent.putExtra("android.intent.extras.CAMERA_FACING", 1);
-        }
+//        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        File f = new File(getCacheDir(), "temp_input.jpg");
+//        Uri uriForFile = FileProvider.getUriForFile(
+//                MainActivity.this,
+//                getPackageName() + ".provider",
+//                f
+//        );
+//        intent.putExtra(MediaStore.EXTRA_OUTPUT, uriForFile);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+//            intent.putExtra("android.intent.extras.CAMERA_FACING", android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT);
+//            intent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1);
+//            intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true);
+//        } else {
+//            intent.putExtra("android.intent.extras.CAMERA_FACING", 1);
+//        }
+
+        Intent intent = SelfieCameraActivity.SelfieCameraIntent(MainActivity.this,null, com.accurascan.facematch.sample.util.Utils.createImageUri(MainActivity.this));
         startActivityForResult(intent, CAPTURE_IMAGE);
     }
 
@@ -208,12 +213,16 @@ public class MainActivity extends AppCompatActivity implements FaceCallback, Fac
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            if (requestCode == CAPTURE_IMAGE) { // handle request code CAPTURE_IMAGE used for capture image in camera
-                File f = new File(getCacheDir(), "temp.jpg");
-
-                if (!f.exists())
-                    return;
-                faceHelper.setInputImage(f.getAbsolutePath());
+            if (requestCode == CAPTURE_IMAGE && data != null) { // handle request code CAPTURE_IMAGE used for capture image in camera
+//                File f = new File(getCacheDir(), "temp_input.jpg");
+//
+//                if (!f.exists())
+//                    return;
+                Uri uri = data.getData();
+                if (uri != null && uri.getPath() != null) {
+                    File file = new File(uri.getPath());
+                    faceHelper.setInputImage(file.getAbsolutePath());
+                }
             }
         }
     }
