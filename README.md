@@ -7,7 +7,7 @@ Below steps to setup Accura Face Match SDK's to your project.
 ```
     Create assets folder under app/src/main and add license file in to assets folder.<br />    
     - accuraface.license // for Accura Face Match <br />
-    Generate your Accura license from https://accurascan.com/developer/dashboard
+    
 ```
 
 #### Step 2 : Implement SDK.
