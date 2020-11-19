@@ -110,7 +110,20 @@ dependencies {
 Open selfie camera for auto capture.
 
 ```
-Intent intent = SelfieCameraActivity.SelfieCameraIntent(MainActivity.this,null,Utils.createImageUri(MainActivity.this));
+CameraScreenCustomization cameraScreenCustomization = new CameraScreenCustomization();
+cameraScreenCustomization.backGroundColor = 0xFFC4C4C5;
+cameraScreenCustomization.closeIconColor = 0xFF000000;
+cameraScreenCustomization.feedbackBackGroundColor = Color.TRANSPARENT;
+cameraScreenCustomization.feedbackTextColor = Color.BLACK;
+cameraScreenCustomization.feedbackTextSize = 18;
+cameraScreenCustomization.feedBackframeMessage = "Frame Your Face";
+cameraScreenCustomization.feedBackAwayMessage = "Move Phone Away";
+cameraScreenCustomization.feedBackOpenEyesMessage = "Keep Your Eyes Open";
+cameraScreenCustomization.feedBackCloserMessage = "Move Phone Closer";
+cameraScreenCustomization.feedBackCenterMessage = "Move Phone Center";
+cameraScreenCustomization.feedBackMultipleFace = "Multiple face detected";
+
+Intent intent = SelfieCameraActivity.SelfieCameraIntent(MainActivity.this,cameraScreenCustomization,Utils.createImageUri(MainActivity.this));
 startActivityForResult(intent, CAPTURE_IMAGE);
 
 @Override
