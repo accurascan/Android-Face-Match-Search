@@ -7,7 +7,6 @@ Below steps to setup Accura Face Match SDK's to your project.
 ```
     Create assets folder under app/src/main and add license file in to assets folder.<br />    
     - accuraface.license // for Accura Face Match <br />
-    
 ```
 
 #### Step 2 : Implement SDK.
@@ -21,8 +20,11 @@ dependencies {
    implementation project(":accura_facem")
 }
 ```
+#### Step 3 : Firebase setup
+Before executing the project you have to connect it to your Firebase Project.
+ - Add google-services.json file to `autofacedetect\` module
 
-#### Step 3 : Implement face match code manually to your activity.
+#### Step 4 : Implement face match code manually to your activity.
 
     Important Grant Camera and storage Permission.
 
@@ -106,7 +108,7 @@ dependencies {
     public void onExtractInit(int ret) {
     }
 
-#### Step 4 : Auto face capture SDK.
+#### Step 5 : Auto face capture SDK.
 Open selfie camera for auto capture.
 
 ```
