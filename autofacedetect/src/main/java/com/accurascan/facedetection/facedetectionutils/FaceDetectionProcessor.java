@@ -153,40 +153,18 @@ public class FaceDetectionProcessor extends VisionProcessorBase<List<FirebaseVis
                 bottom = (int) (ovalRect.bottom - wY);
                 Rect insetOval = new Rect(left, top, right, bottom);
                 //</editor-fold>
-//                Logger.e(TAG, "extend " + extendOval.toString());
-//                Logger.e(TAG, "oval " + ovalRect.toString());
-//                Logger.e(TAG, "inset " + insetOval.toString());
-
-
-//                float fx = rect.exactCenterX();
-//                float fy = rect.exactCenterY();
-//                float ffx = frameMetadata.getBitmap().getWidth() / 2f;
-//                float ffy = frameMetadata.getBitmap().getHeight() / 2f;
-//                int point = 200;
-//                Logger.e(TAG, "(" + fx + "," + fy + ")(" + ffx + "," + ffy + ")");
-//                if (rect.left >= frameMetadata.getRect().left - 80 && rect.top >= frameMetadata.getRect().top - 80
-//                        && rect.right <= frameMetadata.getRect().right +100
-//                        && rect.bottom <= frameMetadata.getRect().bottom +100) {
-//                if ((rect.left < extendOval.left || rect.right > extendOval.right) && (rect.bottom > extendOval.bottom || rect.top < extendOval.top) ) {
-//                    faceDetectionResultListener.onUserInteraction("Move Phone Away");
+//                if (-10.0 >= face.getHeadEulerAngleY() || face.getHeadEulerAngleY() >= 10) {
+//                    // center Message
+//                    Logger.e(TAG, "Ce - " + face.getHeadEulerAngleY() + " " + (-10.0 >= face.getHeadEulerAngleY()) + (face.getHeadEulerAngleY() >= 10));
+//                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_MOVE_PHONE_CENTER);
 //                    return;
 //                }
-//                if ((rect.left > insetOval.left || rect.right < insetOval.right) && (rect.bottom < insetOval.bottom || rect.top > insetOval.top)) {
-//                    faceDetectionResultListener.onUserInteraction("Move Phone Closer");
+//                if (face.getLeftEyeOpenProbability() < 0.8 || face.getRightEyeOpenProbability() < 0.8) {
+//                    // keep Eyes open message
+//                    Logger.e(TAG, "O - " + (face.getLeftEyeOpenProbability() < 0.8?1:0) + (face.getRightEyeOpenProbability() < 0.8?1:0));
+//                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_OPEN_EYES);
 //                    return;
 //                }
-                if (-10.0 >= face.getHeadEulerAngleY() || face.getHeadEulerAngleY() >= 10) {
-                    // center Message
-                    Logger.e(TAG, "Ce - " + face.getHeadEulerAngleY() + " " + (-10.0 >= face.getHeadEulerAngleY()) + (face.getHeadEulerAngleY() >= 10));
-                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_MOVE_PHONE_CENTER);
-                    return;
-                }
-                if (face.getLeftEyeOpenProbability() < 0.8 || face.getRightEyeOpenProbability() < 0.8) {
-                    // keep Eyes open message
-                    Logger.e(TAG, "O - " + (face.getLeftEyeOpenProbability() < 0.8?1:0) + (face.getRightEyeOpenProbability() < 0.8?1:0));
-                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_OPEN_EYES);
-                    return;
-                }
                 if (rect.left < extendOval.left || rect.top < extendOval.top || rect.right > extendOval.right || rect.bottom > extendOval.bottom) {
                     // away message
                     Logger.e(TAG, "A - " + (rect.left < extendOval.left?1:0) + (rect.top < extendOval.top?1:0) + (rect.right > extendOval.right?1:0) + (rect.bottom > extendOval.bottom?1:0));
@@ -214,27 +192,10 @@ public class FaceDetectionProcessor extends VisionProcessorBase<List<FirebaseVis
 //                        int right = (int) (x + xOffset);
 //                        int bottom = (int) (y + yOffset);
 //                        Bitmap bitmap = Bitmap.createBitmap(frameMetadata.getBitmap(), (int) fleft, (int) ftop, (int) (fright - fleft), (int) (fbottom - ftop));
-                        int ret = doCheckFace(bitmap, 39, 80, 6, 98);
+                        int ret = doCheckFace(bitmap, -1, 90, -1, -1);
                         Logger.e(TAG, "B " + ret);// blur
                         bitmap.recycle();
                         if (ret > 0) {
-//                                //<editor-fold desc="Draw rect on a bitmap to check validation">
-//                                Canvas canvas = new Canvas(originalCameraImage);
-//                                Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-//                                paint.setColor(Color.RED);
-//                                paint.setStyle(Paint.Style.STROKE);
-//                                paint.setStrokeWidth(3.0f);
-//                                canvas.drawRect(face.getBoundingBox(), paint);
-//                                paint.setColor(Color.BLUE);
-//                                canvas.drawRect(extendOval, paint);
-//                                paint.setColor(Color.BLUE);
-//                                canvas.drawRect(insetOval, paint);
-//                                paint.setColor(Color.YELLOW);
-//                                canvas.drawRect(frameMetadata.getRect(), paint);
-//                                RectF rectF = new RectF(ovalRect.left, ovalRect.top, ovalRect.right, ovalRect.bottom);
-//                                paint.setColor(Color.WHITE);
-//                                canvas.drawOval(rectF, paint);
-//                                //</editor-fold>
                             setTakePicture(false);
 //                                Bitmap bitmap1 = BitmapUtils.centerCrop(originalCameraImage, originalCameraImage.getWidth(), originalCameraImage.getWidth());
                             frameMetadata.setRect(extendOval);
@@ -266,10 +227,19 @@ public class FaceDetectionProcessor extends VisionProcessorBase<List<FirebaseVis
     }
 
     /**
+     * To check face validation all values are between 0-100
+     * if remove low light validation then set light tolerance to -1
+     * if remove Blur validation then set light faceBlurPercentage to -1
+     * if remove Glare validation then set light minGlarePercentage & maxGlarePercentage to -1
+     *
      * @param bitmap
+     * @param lightTolerance
+     * @param faceBlurPercentage
+     * @param minGlarePercentage
+     * @param maxGlarePercentage
      * @return
      */
-    public native int doCheckFace(Bitmap bitmap, int lightTolerance, int faceBlurPercentage, int minPercentage, int maxPercentage);
+    public native int doCheckFace(Bitmap bitmap, int lightTolerance, int faceBlurPercentage, int minGlarePercentage, int maxGlarePercentage);
     public native int doCheckData(byte[] yuvdata, int width, int height);
     private native String doLightCheck(Bitmap bitmap, int i);
 }
