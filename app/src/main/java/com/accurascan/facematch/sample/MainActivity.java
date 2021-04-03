@@ -11,6 +11,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.accurascan.facedetection.CameraScreenCustomization;
 import com.accurascan.facedetection.SelfieCameraActivity;
 import com.accurascan.facematch.sample.database.DatabaseHelper;
 import com.accurascan.facematch.sample.model.UserModel;
@@ -123,8 +125,27 @@ public class MainActivity extends AppCompatActivity implements FaceCallback, Fac
 //        } else {
 //            intent.putExtra("android.intent.extras.CAMERA_FACING", 1);
 //        }
+        CameraScreenCustomization cameraScreenCustomization = new CameraScreenCustomization();
+        cameraScreenCustomization.backGroundColor = 0xFFC4C4C5;
+        cameraScreenCustomization.closeIconColor = 0xFF000000;
+        cameraScreenCustomization.feedbackBackGroundColor = Color.TRANSPARENT;
+        cameraScreenCustomization.feedbackTextColor = Color.BLACK;
+        cameraScreenCustomization.feedbackTextSize = 18;
+        cameraScreenCustomization.feedBackframeMessage = "Frame Your Face";
+        cameraScreenCustomization.feedBackAwayMessage = "Move Phone Away";
+        cameraScreenCustomization.feedBackOpenEyesMessage = "Keep Your Eyes Open";
+        cameraScreenCustomization.feedBackCloserMessage = "Move Phone Closer";
+        cameraScreenCustomization.feedBackCenterMessage = "Move Phone Center";
+        cameraScreenCustomization.feedBackMultipleFaceMessage = "Multiple face detected";
+        cameraScreenCustomization.feedBackHeadStraightMessage = "Keep Your Head Straight";
+        cameraScreenCustomization.feedBackLowLightMessage = "Low light detected";
+        cameraScreenCustomization.feedBackBlurFaceMessage = "Blur detected over face";
+        cameraScreenCustomization.feedBackGlareFaceMessage = "Glare detected over face";
+        cameraScreenCustomization.setLowLightPercentage(39);
+        cameraScreenCustomization.setBlurPercentage(90);
+        cameraScreenCustomization.setGlarePercentage(-1, -1);
 
-        Intent intent = SelfieCameraActivity.SelfieCameraIntent(MainActivity.this,null, com.accurascan.facematch.sample.util.Utils.createImageUri(MainActivity.this));
+        Intent intent = SelfieCameraActivity.SelfieCameraIntent(MainActivity.this,cameraScreenCustomization, com.accurascan.facematch.sample.util.Utils.createImageUri(MainActivity.this));
         startActivityForResult(intent, CAPTURE_IMAGE);
     }
 
