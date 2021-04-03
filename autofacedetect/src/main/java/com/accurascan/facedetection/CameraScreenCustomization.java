@@ -3,6 +3,8 @@ package com.accurascan.facedetection;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.ColorInt;
+
 public final class CameraScreenCustomization implements Parcelable {
 
     public int backGroundColor = 0xFFC4C4C5;
@@ -18,7 +20,16 @@ public final class CameraScreenCustomization implements Parcelable {
     public String feedBackOpenEyesMessage;
     public String feedBackCenterMessage;
     public String feedBackframeMessage;
-    public String feedBackMultipleFace;
+    public String feedBackMultipleFaceMessage;
+    public String feedBackHeadStraightMessage;
+    public String feedBackLowLightMessage;
+    public String feedBackBlurFaceMessage;
+    public String feedBackGlareFaceMessage;
+
+    public int lowLightPercentage = 39;
+    public int blurPercentage = 75;
+    public int glareMinPercentage = 6;
+    public int glareMaxPercentage = 99;
 
 
     public CameraScreenCustomization() {
@@ -35,7 +46,15 @@ public final class CameraScreenCustomization implements Parcelable {
         feedBackOpenEyesMessage = in.readString();
         feedBackCenterMessage = in.readString();
         feedBackframeMessage = in.readString();
-        feedBackMultipleFace = in.readString();
+        feedBackMultipleFaceMessage = in.readString();
+        feedBackHeadStraightMessage = in.readString();
+        feedBackLowLightMessage = in.readString();
+        feedBackBlurFaceMessage = in.readString();
+        feedBackGlareFaceMessage = in.readString();
+        lowLightPercentage = in.readInt();
+        blurPercentage = in.readInt();
+        glareMinPercentage = in.readInt();
+        glareMaxPercentage = in.readInt();
     }
 
     public static final Creator<CameraScreenCustomization> CREATOR = new Creator<CameraScreenCustomization>() {
@@ -49,6 +68,19 @@ public final class CameraScreenCustomization implements Parcelable {
             return new CameraScreenCustomization[size];
         }
     };
+
+    public void setLowLightPercentage(int lowLightPercentage){
+        this.lowLightPercentage = lowLightPercentage;
+    }
+
+    public void setBlurPercentage(int blurPercentage){
+        this.blurPercentage = blurPercentage;
+    }
+
+    public void setGlarePercentage(int glareMinPercentage, int glareMaxPercentage){
+        this.glareMinPercentage = glareMinPercentage;
+        this.glareMaxPercentage = glareMaxPercentage;
+    }
 
     @Override
     public int describeContents() {
@@ -67,6 +99,14 @@ public final class CameraScreenCustomization implements Parcelable {
         dest.writeString(feedBackOpenEyesMessage);
         dest.writeString(feedBackCenterMessage);
         dest.writeString(feedBackframeMessage);
-        dest.writeString(feedBackMultipleFace);
+        dest.writeString(feedBackMultipleFaceMessage);
+        dest.writeString(feedBackHeadStraightMessage);
+        dest.writeString(feedBackLowLightMessage);
+        dest.writeString(feedBackBlurFaceMessage);
+        dest.writeString(feedBackGlareFaceMessage);
+        dest.writeInt(lowLightPercentage);
+        dest.writeInt(blurPercentage);
+        dest.writeInt(glareMinPercentage);
+        dest.writeInt(glareMaxPercentage);
     }
 }

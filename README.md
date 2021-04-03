@@ -123,7 +123,23 @@ cameraScreenCustomization.feedBackAwayMessage = "Move Phone Away";
 cameraScreenCustomization.feedBackOpenEyesMessage = "Keep Your Eyes Open";
 cameraScreenCustomization.feedBackCloserMessage = "Move Phone Closer";
 cameraScreenCustomization.feedBackCenterMessage = "Move Phone Center";
-cameraScreenCustomization.feedBackMultipleFace = "Multiple face detected";
+cameraScreenCustomization.feedBackMultipleFaceMessage = "Multiple face detected";
+cameraScreenCustomization.feedBackHeadStraightMessage = "Keep Your Head Straight";
+cameraScreenCustomization.feedBackLowLightMessage = "Low light detected";
+cameraScreenCustomization.feedBackBlurFaceMessage = "Blur detected over face";
+cameraScreenCustomization.feedBackGlareFaceMessage = "Glare detected over face";
+
+// Set lightTolerance 0 for full dark document and 100 for full bright document
+// if remove low light validation then set lowLightPercentage to -1
+cameraScreenCustomization.setLowLightPercentage(39/*lowLightPercentage*/);
+
+// Set blurPercentage 0 to accept clean face and 100 to accept blurry face
+// if remove Blur validation then set blurPercentage to -1
+cameraScreenCustomization.setBlurPercentage(80/*blurPercentage*/); // To allow blur on face
+
+// Set minGlarePercentage &  maxGlarePercentage to detect glare
+// if remove Glare validation then set light minGlarePercentage & maxGlarePercentage to -1
+cameraScreenCustomization.setGlarePercentage(6/*glareMinPercentage*/, 98/*glareMaxPercentage*/);
 
 Intent intent = SelfieCameraActivity.SelfieCameraIntent(MainActivity.this,cameraScreenCustomization,Utils.createImageUri(MainActivity.this));
 startActivityForResult(intent, CAPTURE_IMAGE);

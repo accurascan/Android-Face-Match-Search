@@ -3,7 +3,6 @@ package com.accurascan.facedetection;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -18,11 +17,10 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -106,12 +104,19 @@ public final class SelfieCameraActivity extends AppCompatActivity
             cameraScreenCustomization.feedbackTextColor = Color.BLACK;
             cameraScreenCustomization.feedbackTextSize = 18;
 
-            cameraScreenCustomization.feedBackframeMessage = "Frame Your Face";
-            cameraScreenCustomization.feedBackAwayMessage = "Move Phone Away";
-            cameraScreenCustomization.feedBackOpenEyesMessage = "Keep Your Eyes Open";
-            cameraScreenCustomization.feedBackCloserMessage = "Move Phone Closer";
-            cameraScreenCustomization.feedBackCenterMessage = "Move Phone Center";
-
+            cameraScreenCustomization.feedBackframeMessage = FaceDetectionProcessor.ACCURA_FEEDBACK_FRAME_YOUR_FACE;
+            cameraScreenCustomization.feedBackAwayMessage = FaceDetectionProcessor.ACCURA_FEEDBACK_MOVE_PHONE_AWAY;
+            cameraScreenCustomization.feedBackOpenEyesMessage = FaceDetectionProcessor.ACCURA_FEEDBACK_OPEN_EYES;
+            cameraScreenCustomization.feedBackCloserMessage = FaceDetectionProcessor.ACCURA_FEEDBACK_MOVE_PHONE_CLOSER;
+            cameraScreenCustomization.feedBackCenterMessage = FaceDetectionProcessor.ACCURA_FEEDBACK_MOVE_PHONE_CENTER;
+            cameraScreenCustomization.feedBackMultipleFaceMessage = FaceDetectionProcessor.ACCURA_FEEDBACK_MULTIPLE_FACES;
+            cameraScreenCustomization.feedBackHeadStraightMessage = FaceDetectionProcessor.ACCURA_FEEDBACK_HEAD_STEADY;
+            cameraScreenCustomization.feedBackLowLightMessage = FaceDetectionProcessor.ACCURA_FEEDBACK_LOW_LIGHT;
+            cameraScreenCustomization.feedBackBlurFaceMessage = FaceDetectionProcessor.ACCURA_FEEDBACK_BLUR;
+            cameraScreenCustomization.feedBackGlareFaceMessage = FaceDetectionProcessor.ACCURA_FEEDBACK_GLARE;
+            cameraScreenCustomization.setLowLightPercentage(39);
+            cameraScreenCustomization.setBlurPercentage(75);
+            cameraScreenCustomization.setGlarePercentage(6, 99);
         }
 
         DisplayMetrics dm = getResources().getDisplayMetrics();
@@ -173,13 +178,10 @@ public final class SelfieCameraActivity extends AppCompatActivity
         try {
             processor = new FaceDetectionProcessor();
             processor.setFaceDetectionResultListener(getFaceDetectionListener());
+            processor.setCustomization(cameraScreenCustomization);
             cameraSource.setMachineLearningFrameProcessor(processor);
         } catch (Exception e) {
-            Toast.makeText(
-                    getApplicationContext(),
-                    "Can not create image processor: " + e.getMessage(),
-                    Toast.LENGTH_LONG)
-                    .show();
+            Logger.e(TAG, "Can not create image processor: " + Log.getStackTraceString(e));
         }
 
     }
@@ -189,9 +191,10 @@ public final class SelfieCameraActivity extends AppCompatActivity
     private FaceDetectionResultListener getFaceDetectionListener() {
         if (faceDetectionResultListener == null)
             faceDetectionResultListener = new FaceDetectionResultListener() {
+                private boolean isFirst = false;
                 @Override
                 public void onSuccess(@Nullable Bitmap originalCameraImage, @NonNull FirebaseVisionFace face, @NonNull FrameMetadata frameMetadata, @NonNull GraphicOverlay graphicOverlay) {
-
+                    if (!isFirst){ isFirst = true; fillFeedBackText(200);}
                     Bitmap bitmap1 = BitmapUtils.centerCrop(originalCameraImage, originalCameraImage.getWidth(), originalCameraImage.getWidth());
 
                     if (bitmap1 != null && !bitmap1.isRecycled()) {
@@ -259,13 +262,47 @@ public final class SelfieCameraActivity extends AppCompatActivity
                             status = TextUtils.isEmpty(cameraScreenCustomization.feedBackframeMessage) ? s : cameraScreenCustomization.feedBackframeMessage;
                             break;
                         case FaceDetectionProcessor.ACCURA_FEEDBACK_MULTIPLE_FACES:
-                            status = TextUtils.isEmpty(cameraScreenCustomization.feedBackMultipleFace) ? s : cameraScreenCustomization.feedBackMultipleFace;
+                            status = TextUtils.isEmpty(cameraScreenCustomization.feedBackMultipleFaceMessage) ? s : cameraScreenCustomization.feedBackMultipleFaceMessage;
+                            break;
+                        case FaceDetectionProcessor.ACCURA_FEEDBACK_HEAD_STEADY:
+                            status = TextUtils.isEmpty(cameraScreenCustomization.feedBackHeadStraightMessage) ? s : cameraScreenCustomization.feedBackHeadStraightMessage;
+                            break;
+                        case FaceDetectionProcessor.ACCURA_FEEDBACK_CODE_DARK_FACE:
+                            status = TextUtils.isEmpty(cameraScreenCustomization.feedBackLowLightMessage) ? FaceDetectionProcessor.ACCURA_FEEDBACK_LOW_LIGHT : cameraScreenCustomization.feedBackLowLightMessage;
+                            break;
+                        case FaceDetectionProcessor.ACCURA_FEEDBACK_CODE_BLUR_FACE:
+                            status = TextUtils.isEmpty(cameraScreenCustomization.feedBackBlurFaceMessage) ? FaceDetectionProcessor.ACCURA_FEEDBACK_BLUR : cameraScreenCustomization.feedBackBlurFaceMessage;
+                            break;
+                        case FaceDetectionProcessor.ACCURA_FEEDBACK_CODE_GLARE:
+                            status = TextUtils.isEmpty(cameraScreenCustomization.feedBackGlareFaceMessage) ? FaceDetectionProcessor.ACCURA_FEEDBACK_GLARE : cameraScreenCustomization.feedBackGlareFaceMessage;
                             break;
 
                     }
-                    tv_status.setText(status);
-                    status = s;
-                    mHandler.sendEmptyMessageDelayed(1, 2000);
+                    if (!isFirst){ isFirst = true; fillFeedBackText(300);}
+                }
+
+                private void fillFeedBackText(final int timeToBlink) {
+
+                    final Handler handler = new Handler();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try{Thread.sleep(timeToBlink);}catch (Exception e) {}
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(tv_status.getVisibility() == View.VISIBLE) {
+                                        tv_status.setVisibility(View.INVISIBLE);
+                                        fillFeedBackText(400);
+                                    } else {
+                                        tv_status.setText(status);
+                                        tv_status.setVisibility(View.VISIBLE);
+                                        fillFeedBackText(600);
+                                    }
+                                }
+                            });
+                        }
+                    }).start();
                 }
 
                 @Override

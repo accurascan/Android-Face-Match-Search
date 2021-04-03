@@ -10,6 +10,7 @@ import android.graphics.RectF;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.accurascan.facedetection.CameraScreenCustomization;
 import com.accurascan.facedetection.common.BitmapUtils;
 import com.accurascan.facedetection.common.FrameMetadata;
 import com.accurascan.facedetection.common.GraphicOverlay;
@@ -36,10 +37,19 @@ public class FaceDetectionProcessor extends VisionProcessorBase<List<FirebaseVis
     public static final String ACCURA_FEEDBACK_MOVE_PHONE_CLOSER = "Move Phone Closer";
     public static final String ACCURA_FEEDBACK_FRAME_YOUR_FACE = "Frame Your Face";
     public static final String ACCURA_FEEDBACK_MULTIPLE_FACES = "Multiple face detected";
+    public static final String ACCURA_FEEDBACK_HEAD_STEADY = "Keep Your Head Straight";
+    public static final String ACCURA_FEEDBACK_LOW_LIGHT = "Low light detected";
+    public static final String ACCURA_FEEDBACK_BLUR = "Blur detected over face";
+    public static final String ACCURA_FEEDBACK_GLARE = "Glare detected over face";
+
+    public static final String ACCURA_FEEDBACK_CODE_DARK_FACE = "-1";
+    public static final String ACCURA_FEEDBACK_CODE_BLUR_FACE = "-2";
+    public static final String ACCURA_FEEDBACK_CODE_GLARE = "-3";
 
     private final FirebaseVisionFaceDetector detector;
 
     FaceDetectionResultListener faceDetectionResultListener;
+    private CameraScreenCustomization cameraScreenCustomization;
 
     private static final long CLICK_TIME_INTERVAL = 10;
 
@@ -71,6 +81,10 @@ public class FaceDetectionProcessor extends VisionProcessorBase<List<FirebaseVis
 
     public void setFaceDetectionResultListener(FaceDetectionResultListener faceDetectionResultListener) {
         this.faceDetectionResultListener = faceDetectionResultListener;
+    }
+
+    public void setCustomization(CameraScreenCustomization cameraScreenCustomization) {
+        this.cameraScreenCustomization = cameraScreenCustomization;
     }
 
     public boolean isTakePicture() {
@@ -135,8 +149,8 @@ public class FaceDetectionProcessor extends VisionProcessorBase<List<FirebaseVis
                 Rect ovalRect = frameMetadata.getRect();
 
                 //<editor-fold desc="Outer Rectangle">
-                float wX = ovalRect.width() * 0.1f;
-                float wY = ovalRect.height() * 0.1f;
+                float wX = ovalRect.width() * 0.15f;
+                float wY = ovalRect.height() * 0.15f;
                 int left = (int) (ovalRect.left - wX);
                 int top = (int) (ovalRect.top - wY);
                 int right = (int) (ovalRect.right + wX);
@@ -145,71 +159,108 @@ public class FaceDetectionProcessor extends VisionProcessorBase<List<FirebaseVis
                 //</editor-fold>
 
                 //<editor-fold desc="Inner Rectangle">
-                wX = ovalRect.width() * 0.17f;
-                wY = ovalRect.height() * 0.2f;
+                wX = ovalRect.width() * 0.20f;
+                wY = ovalRect.height() * 0.25f;
                 left = (int) (ovalRect.left + wX);
                 top = (int) (ovalRect.top + wY);
                 right = (int) (ovalRect.right - wX);
                 bottom = (int) (ovalRect.bottom - wY);
                 Rect insetOval = new Rect(left, top, right, bottom);
                 //</editor-fold>
-//                if (-10.0 >= face.getHeadEulerAngleY() || face.getHeadEulerAngleY() >= 10) {
-//                    // center Message
-//                    Logger.e(TAG, "Ce - " + face.getHeadEulerAngleY() + " " + (-10.0 >= face.getHeadEulerAngleY()) + (face.getHeadEulerAngleY() >= 10));
-//                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_MOVE_PHONE_CENTER);
-//                    return;
-//                }
-//                if (face.getLeftEyeOpenProbability() < 0.8 || face.getRightEyeOpenProbability() < 0.8) {
-//                    // keep Eyes open message
-//                    Logger.e(TAG, "O - " + (face.getLeftEyeOpenProbability() < 0.8?1:0) + (face.getRightEyeOpenProbability() < 0.8?1:0));
-//                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_OPEN_EYES);
-//                    return;
-//                }
+
+                if (-10.0 >= face.getHeadEulerAngleZ()  || face.getHeadEulerAngleZ() >= 10) {
+                    // head Message
+                    Logger.e(TAG, "He - " + face.getHeadEulerAngleZ() + " " + (-10.0 >= face.getHeadEulerAngleZ()) + (face.getHeadEulerAngleZ() >= 10));
+                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_HEAD_STEADY);
+                    return;
+                }
+                if (-10.0 >= face.getHeadEulerAngleY() || face.getHeadEulerAngleY() >= 10) {
+                    // center Message
+                    Logger.e(TAG, "Ce - " + face.getHeadEulerAngleY() + " " + (-10.0 >= face.getHeadEulerAngleY()) + (face.getHeadEulerAngleY() >= 10));
+                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_MOVE_PHONE_CENTER);
+                    return;
+                }
+
                 if (rect.left < extendOval.left || rect.top < extendOval.top || rect.right > extendOval.right || rect.bottom > extendOval.bottom) {
+                    wX = ovalRect.width() * 0f;
+                    wY = ovalRect.height() * 0f;
+                    left = (int) (ovalRect.left + wX);
+                    top = (int) (ovalRect.top + wY);
+                    right = (int) (ovalRect.right - wX);
+                    bottom = (int) (ovalRect.bottom - wY);
+                    int centerX = left + ((right - left)/3);
+                    int centerY = top + ((bottom - top)/3);
+                    if ((rect.left < left && rect.right > centerX) || (rect.left > centerX && rect.right > right) ||
+                            (rect.top < top && rect.bottom < centerY) || (rect.top > centerY && rect.bottom > bottom)) {
+                        // center message
+                        Logger.e(TAG, "A - " + ((rect.left < left && rect.right > centerX)?1:0) +
+                                ((rect.left > centerX && rect.right > right)?1:0) + ((rect.top < top && rect.bottom < centerY)?1:0) +
+                                ((rect.top > centerY && rect.bottom > bottom)?1:0));
+                        faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_MOVE_PHONE_CENTER);
+                        return;
+                    }
                     // away message
-                    Logger.e(TAG, "A - " + (rect.left < extendOval.left?1:0) + (rect.top < extendOval.top?1:0) + (rect.right > extendOval.right?1:0) + (rect.bottom > extendOval.bottom?1:0));
+                    Logger.e(TAG, "A| - " + (rect.left < extendOval.left?1:0) + (rect.top < extendOval.top?1:0) + (rect.right > extendOval.right?1:0) + (rect.bottom > extendOval.bottom?1:0));
                     faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_MOVE_PHONE_AWAY);
                     return;
                 }
-//                if (rect.left > insetOval.left || rect.top > insetOval.top || rect.right < insetOval.right || rect.bottom < insetOval.bottom) {
-//                    // closer message
-//                    Logger.e(TAG, "C - " + (rect.left > insetOval.left?1:0) + (rect.top > insetOval.top?1:0) + (rect.right < insetOval.right?1:0) + (rect.bottom < insetOval.bottom?1:0));
-//                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_MOVE_PHONE_CLOSER);
-//                    return;
-//                }
-                mLastClickTime = now;
-                Logger.e(TAG, "O   ");// over
-                try {
-                    Bitmap bitmap = Bitmap.createBitmap(originalCameraImage, ovalRect.left, ovalRect.top, ovalRect.width(), ovalRect.height());
-
-                    if (bitmap != null) {
-//                        float x = frameMetadata.getBitmap().getWidth();
-//                        float y = frameMetadata.getBitmap().getHeight();
-//                        float xOffset = frameMetadata.getBitmap().getWidth() / 2.0f;
-//                        float yOffset = frameMetadata.getBitmap().getHeight() / 2.0f;
-//                        int left = (int) (x - xOffset);
-//                        int top = (int) (y - yOffset);
-//                        int right = (int) (x + xOffset);
-//                        int bottom = (int) (y + yOffset);
-//                        Bitmap bitmap = Bitmap.createBitmap(frameMetadata.getBitmap(), (int) fleft, (int) ftop, (int) (fright - fleft), (int) (fbottom - ftop));
-                        int ret = doCheckFace(bitmap, -1, 90, -1, -1);
-                        Logger.e(TAG, "B " + ret);// blur
-                        bitmap.recycle();
-                        if (ret > 0) {
-                            setTakePicture(false);
-//                                Bitmap bitmap1 = BitmapUtils.centerCrop(originalCameraImage, originalCameraImage.getWidth(), originalCameraImage.getWidth());
-                            frameMetadata.setRect(extendOval);
-                            faceDetectionResultListener.onSuccess(originalCameraImage, face, frameMetadata, graphicOverlay);
-//                                originalCameraImage.recycle();
-                        } else if (!originalCameraImage.isRecycled())
-                            originalCameraImage.recycle();
-                    }
-                } catch (Exception e) {
-                    Logger.e(TAG, "CA - " + e.getMessage());
-                    if (!originalCameraImage.isRecycled())
-                        originalCameraImage.recycle();
-                    e.printStackTrace();
+                if (rect.width() < (ovalRect.width() * 0.40f) || rect.height() < (ovalRect.height() * 0.40f)/*rect.left > insetOval.left || rect.top > insetOval.top || rect.right < insetOval.right || rect.bottom < insetOval.bottom*/) {
+                    // closer message
+                    Logger.e(TAG, "C - " + (rect.width() < (ovalRect.width() * 0.30f)?1:0) + (rect.height() < (ovalRect.height() * 0.30f)?1:0));
+                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_MOVE_PHONE_CLOSER);
+                    return;
                 }
+                if (face.getLeftEyeOpenProbability() < 0.8 || face.getRightEyeOpenProbability() < 0.8) {
+                    // keep Eyes open message
+                    Logger.e(TAG, "O - " + (face.getLeftEyeOpenProbability() < 0.8?1:0) + (face.getRightEyeOpenProbability() < 0.8?1:0));
+                    faceDetectionResultListener.onFeedBackMessage(ACCURA_FEEDBACK_OPEN_EYES);
+                    return;
+                }
+                mLastClickTime = now;
+//                if (true/*ffx - point <= fx && fx <= ffx + point && ffy - point <= fy && fy <= ffy + point*/) {
+                if (rect.left >= extendOval.left && rect.top >= extendOval.top && rect.right <= extendOval.right && rect.bottom <= extendOval.bottom
+                    /*&& rect.left <= insetOval.left && rect.top <= insetOval.top && rect.right >= insetOval.right && rect.bottom >= insetOval.bottom*/) {
+                    Logger.e(TAG, "O   ");// over
+                    try {
+                        Bitmap bitmap = Bitmap.createBitmap(originalCameraImage, ovalRect.left, ovalRect.top, ovalRect.width(), ovalRect.height());
+
+                        if (bitmap != null) {
+                            //                        float x = frameMetadata.getBitmap().getWidth();
+                            //                        float y = frameMetadata.getBitmap().getHeight();
+                            //                        float xOffset = frameMetadata.getBitmap().getWidth() / 2.0f;
+                            //                        float yOffset = frameMetadata.getBitmap().getHeight() / 2.0f;
+                            //                        int left = (int) (x - xOffset);
+                            //                        int top = (int) (y - yOffset);
+                            //                        int right = (int) (x + xOffset);
+                            //                        int bottom = (int) (y + yOffset);
+                            //                        Bitmap bitmap = Bitmap.createBitmap(frameMetadata.getBitmap(), (int) fleft, (int) ftop, (int) (fright - fleft), (int) (fbottom - ftop));
+                            int ret = doCheckFace(bitmap, cameraScreenCustomization.lowLightPercentage, cameraScreenCustomization.blurPercentage, cameraScreenCustomization.glareMinPercentage, cameraScreenCustomization.glareMaxPercentage);
+                            Logger.e(TAG, "B " + ret);// blur
+                            bitmap.recycle();
+                            if (ret > 0) {
+                                setTakePicture(false);
+                                if (extendOval.left < 0) extendOval.left = 0;
+                                if (extendOval.top < 0) extendOval.top = 0;
+                                if (extendOval.right > originalCameraImage.getWidth()) extendOval.right = originalCameraImage.getWidth();
+                                if (extendOval.bottom > originalCameraImage.getWidth()) extendOval.bottom = originalCameraImage.getHeight();
+                                frameMetadata.setRect(extendOval);
+                                faceDetectionResultListener.onSuccess(originalCameraImage, face, frameMetadata, graphicOverlay);
+//                                originalCameraImage.recycle();
+                            } else {
+                                faceDetectionResultListener.onFeedBackMessage("" + ret + "");
+                                if (!originalCameraImage.isRecycled())
+                                    originalCameraImage.recycle();
+                            }
+                        }
+                    } catch (Exception e) {
+                        Logger.e(TAG, "CA - " + e.getMessage());
+                        if (!originalCameraImage.isRecycled())
+                            originalCameraImage.recycle();
+                        e.printStackTrace();
+                    }
+                }
+                else if (!originalCameraImage.isRecycled())
+                    originalCameraImage.recycle();
             }
             else if (!originalCameraImage.isRecycled())
                 originalCameraImage.recycle();
